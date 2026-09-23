@@ -45,7 +45,7 @@ const MEDIA_KEYS = [
 
     // Screenshots
     { key: MK.SCREENSHOT,                 mode: Cinnamon.ActionMode.ALL },
-    { key: MK.SCREENSHOT_CLIP,            mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SCREENSHOT_CLIP,            mode: Cinnamon.ActionMode.ALL },
     { key: MK.WINDOW_SCREENSHOT,          mode: Cinnamon.ActionMode.NORMAL },
     { key: MK.WINDOW_SCREENSHOT_CLIP,     mode: Cinnamon.ActionMode.NORMAL },
     { key: MK.AREA_SCREENSHOT,            mode: Cinnamon.ActionMode.NORMAL },
