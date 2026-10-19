@@ -1,5 +1,7 @@
 name: Validate Mint 22 compatibility
 on:
+  push:
+    branches: [ci-mint22-compat-checks]
   workflow_dispatch:
 permissions:
   contents: read
