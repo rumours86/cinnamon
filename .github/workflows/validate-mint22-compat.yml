@@ -16,26 +16,23 @@ jobs:
           - name: Mint 22 X11
             version: mint22
             image: linuxmintd/mint22.3-amd64
-            profiles: pkg.cinnamon.nowayland
           - name: LMDE 7 Wayland
             version: lmde7
             image: linuxmintd/lmde7-amd64
-            profiles: ''
           - name: Mint 27 Wayland
             version: mint27
             image: linuxmintd/mint27-amd64
-            profiles: ''
     container:
       image: ${{ matrix.image }}
       options: --security-opt seccomp=unconfined
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: 2e92a9131a17bceb47ee7b85dc7cc4fb244ebccd
+          ref: 1bd661c33f792cb3b5bb12662fba1fe7ffaba00d
       - name: Verify source revision
         run: |
           chown root:root .
-          test "$(git rev-parse HEAD)" = 2e92a9131a17bceb47ee7b85dc7cc4fb244ebccd
+          test "$(git rev-parse HEAD)" = 1bd661c33f792cb3b5bb12662fba1fe7ffaba00d
       - name: Update build environment
         run: |
           echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -52,3 +49,16 @@ jobs:
           mint_version: ${{ matrix.version }}
       - name: Verify temporary sudo configuration was removed
         run: test ! -e /etc/sudoers.d/mint-build-profiles
+      - name: Verify packaged backends
+        env:
+          MINT_VERSION: ${{ matrix.version }}
+        run: |
+          test -f /usr/share/xsessions/cinnamon.desktop
+          test -x /usr/libexec/cinnamon/cinnamon-background-daemon
+          if [ "$MINT_VERSION" = mint22 ]; then
+            test ! -e /usr/share/wayland-sessions/cinnamon-wayland.desktop
+            ! readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep -q libgtk4-layer-shell
+          else
+            test -f /usr/share/wayland-sessions/cinnamon-wayland.desktop
+            readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell
+          fi
