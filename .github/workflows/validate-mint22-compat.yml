@@ -1,0 +1,52 @@
+name: Validate Mint 22 compatibility
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Mint 22 X11
+            version: mint22
+            image: linuxmintd/mint22.3-amd64
+            profiles: pkg.cinnamon.nowayland
+          - name: LMDE 7 Wayland
+            version: lmde7
+            image: linuxmintd/lmde7-amd64
+            profiles: ''
+          - name: Mint 27 Wayland
+            version: mint27
+            image: linuxmintd/mint27-amd64
+            profiles: ''
+    container:
+      image: ${{ matrix.image }}
+      options: --security-opt seccomp=unconfined
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: c0b81402f681f88ef1454cb28989af423139b79a
+      - name: Verify source revision
+        run: |
+          chown root:root .
+          test "$(git rev-parse HEAD)" = c0b81402f681f88ef1454cb28989af423139b79a
+      - name: Update build environment
+        run: |
+          echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+          apt-get update
+          apt-get -y dist-upgrade
+          apt-get install -y python-is-python3
+      - uses: linuxmint/github-actions/install-deps@master
+        with:
+          mint_version: ${{ matrix.version }}
+          dependencies: linuxmint/cinnamon-control-center, linuxmint/cinnamon-desktop, linuxmint/cinnamon-menus, linuxmint/cinnamon-session, linuxmint/cinnamon-settings-daemon, linuxmint/cinnamon-translations, linuxmint/cjs, linuxmint/muffin, linuxmint/nemo, linuxmint/xapp, linuxmint/xdg-desktop-portal-xapp
+      - name: Build exact source with proposed action
+        uses: rumours86/github-actions/real-build@9c03ae11a03d2e85e2f1fe6c8cfb5436f04cf56b
+        with:
+          build_profiles: ${{ matrix.profiles }}
+      - name: Verify temporary sudo configuration was removed
+        run: test ! -e /etc/sudoers.d/mint-build-profiles
