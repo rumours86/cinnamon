@@ -31,11 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: c0b81402f681f88ef1454cb28989af423139b79a
+          ref: 2e92a9131a17bceb47ee7b85dc7cc4fb244ebccd
       - name: Verify source revision
         run: |
           chown root:root .
-          test "$(git rev-parse HEAD)" = c0b81402f681f88ef1454cb28989af423139b79a
+          test "$(git rev-parse HEAD)" = 2e92a9131a17bceb47ee7b85dc7cc4fb244ebccd
       - name: Update build environment
         run: |
           echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -47,8 +47,8 @@ jobs:
           mint_version: ${{ matrix.version }}
           dependencies: linuxmint/cinnamon-control-center, linuxmint/cinnamon-desktop, linuxmint/cinnamon-menus, linuxmint/cinnamon-session, linuxmint/cinnamon-settings-daemon, linuxmint/cinnamon-translations, linuxmint/cjs, linuxmint/muffin, linuxmint/nemo, linuxmint/xapp, linuxmint/xdg-desktop-portal-xapp
       - name: Build exact source with proposed action
-        uses: rumours86/github-actions/real-build@9c03ae11a03d2e85e2f1fe6c8cfb5436f04cf56b
+        uses: rumours86/github-actions/real-build@d4c1e22b1939de2728f9f70eaaa6368600d64f92
         with:
-          build_profiles: ${{ matrix.profiles }}
+          mint_version: ${{ matrix.version }}
       - name: Verify temporary sudo configuration was removed
         run: test ! -e /etc/sudoers.d/mint-build-profiles
