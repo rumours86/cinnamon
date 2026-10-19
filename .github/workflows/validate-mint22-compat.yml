@@ -28,11 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: 1bd661c33f792cb3b5bb12662fba1fe7ffaba00d
+          ref: ab69d335c36157a1f3b5bd33e5b4227fb91f35e8
       - name: Verify source revision
         run: |
           chown root:root .
-          test "$(git rev-parse HEAD)" = 1bd661c33f792cb3b5bb12662fba1fe7ffaba00d
+          test "$(git rev-parse HEAD)" = ab69d335c36157a1f3b5bd33e5b4227fb91f35e8
       - name: Update build environment
         run: |
           echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -44,23 +44,28 @@ jobs:
           mint_version: ${{ matrix.version }}
           dependencies: linuxmint/cinnamon-control-center, linuxmint/cinnamon-desktop, linuxmint/cinnamon-menus, linuxmint/cinnamon-session, linuxmint/cinnamon-settings-daemon, linuxmint/cinnamon-translations, linuxmint/cjs, linuxmint/muffin, linuxmint/nemo, linuxmint/xapp, linuxmint/xdg-desktop-portal-xapp
       - name: Build exact source with proposed action
-        uses: rumours86/github-actions/real-build@d4c1e22b1939de2728f9f70eaaa6368600d64f92
+        uses: rumours86/github-actions/real-build@2ea381382346645b143f3e6c14d0ac84e33cdd90
         with:
           mint_version: ${{ matrix.version }}
+          install_packages: ${{ matrix.version != 'mint22' }}
       - name: Verify temporary sudo configuration was removed
         run: test ! -e /etc/sudoers.d/mint-build-profiles
       - name: Verify packaged backends
         env:
           MINT_VERSION: ${{ matrix.version }}
         run: |
-          test -f /usr/share/xsessions/cinnamon.desktop
-          test -x /usr/libexec/cinnamon/cinnamon-background-daemon
+          mkdir /tmp/verify-cinnamon
+          dpkg-deb -x ../cinnamon-common_*.deb /tmp/verify-cinnamon
+          dpkg-deb -x ../cinnamon_*_amd64.deb /tmp/verify-cinnamon
+          cd /tmp/verify-cinnamon
+          test -f usr/share/xsessions/cinnamon.desktop
+          test -x usr/libexec/cinnamon/cinnamon-background-daemon
           if [ "$MINT_VERSION" = mint22 ]; then
-            test ! -e /usr/share/wayland-sessions/cinnamon-wayland.desktop
-            if readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell; then
+            test ! -e usr/share/wayland-sessions/cinnamon-wayland.desktop
+            if readelf -d usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell; then
               exit 1
             fi
           else
-            test -f /usr/share/wayland-sessions/cinnamon-wayland.desktop
-            readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell
+            test -f usr/share/wayland-sessions/cinnamon-wayland.desktop
+            readelf -d usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell
           fi
