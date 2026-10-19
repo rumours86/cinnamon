@@ -57,7 +57,9 @@ jobs:
           test -x /usr/libexec/cinnamon/cinnamon-background-daemon
           if [ "$MINT_VERSION" = mint22 ]; then
             test ! -e /usr/share/wayland-sessions/cinnamon-wayland.desktop
-            ! readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep -q libgtk4-layer-shell
+            if readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell; then
+              exit 1
+            fi
           else
             test -f /usr/share/wayland-sessions/cinnamon-wayland.desktop
             readelf -d /usr/libexec/cinnamon/cinnamon-background-daemon | grep libgtk4-layer-shell
